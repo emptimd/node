@@ -2,7 +2,9 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mysql      = require('mysql');
 var request = require('request');
+var Entities = require('html-entities').AllHtmlEntities;
 const cheerio = require('cheerio');
+
 
 // var cluster = require('cluster');
 // if (cluster.isMaster) {
@@ -23,8 +25,8 @@ const cheerio = require('cheerio');
 var connection = mysql.createPool({
 	  connectionLimit: 10,
 	  host     : 'localhost',
-	  user     : 'root',
-	  password : 'user',
+	  user     : 'homestead',
+	  password : 'secret',
 	  database : 'linkquidator'
 	});
 
@@ -81,10 +83,20 @@ app.get('/db', function(req, res) {
 	var start = new Date();
 	// connection.connect();
 
-	connection.query('SELECT * from users', function(err, rows, fields) {
+	connection.query('SELECT * from users order by id desc', function(err, rows, fields) {
 	  if (!err) {
 	    var end = new Date();
-    	res.send({data: end.getTime()-start.getTime()});
+    	let data=[];
+	    for (var i = rows.length - 1; i >= 0; i--) {
+	    	if (rows[i].email == 'emptimd@gmail.com') {
+    			data = {position: i+1};
+    			break;
+	    	}
+	    }
+
+    	res.end("Hello");
+	    // res.send({count: rows.length});
+    	// res.send({data: end.getTime()-start.getTime()});
 
 		}
 	  else
@@ -97,7 +109,7 @@ app.get('/db', function(req, res) {
 
 app.get('/parse', function(req, res) {
 	// console.log(process.memoryUsage());
-	request('https://yandex.ru/pogoda/kishinev1', function (error, response, body) {
+	request.get('https://yandex.ru/pogoda/kishinev', function (error, response, body) {
 	  // console.log('error:', error); // Print the error if one occurred
 	  // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
 	  // console.log('body:', body); // Print the HTML for the Google homepage.
@@ -125,7 +137,7 @@ app.get('/parse', function(req, res) {
 	});
 });
 
-var server = app.listen(3040, function () {
+var server = app.listen(3001, function () {
 	console.log('Api started');
 });
 
